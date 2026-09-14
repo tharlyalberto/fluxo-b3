@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 import os
 import requests
 from datetime import datetime
@@ -51,47 +52,99 @@ st.subheader("📈 Histórico Macro do Fluxo (IND)")
 fig_fluxo = go.Figure()
 fig_fluxo.add_trace(go.Scatter(x=df_completo['Data'], y=df_completo['IND_Gringo'], mode='lines+markers', name='Estrangeiros (Gringos)', line=dict(color='#00ffcc', width=3)))
 fig_fluxo.add_trace(go.Scatter(x=df_completo['Data'], y=df_completo['IND_Inst'], mode='lines+markers', name='Institucionais BR', line=dict(color='#ffaa00', width=2, dash='dash')))
-fig_fluxo.update_layout(template="plotly_dark", height=320, margin=dict(l=10, r=10, t=10, b=10))
+fig_fluxo.update_layout(template="plotly_dark", height=280, margin=dict(l=10, r=10, t=10, b=10))
 st.plotly_chart(fig_fluxo, key="grafico_fluxo_macro_vertical")
 
 st.markdown("---")
 
-# --- 4. SEÇÃO DO GRÁFICO REAL-TIME EM PYTHON (100% DESTRAVADO) ---
-st.subheader("⏱️ Histórico Recente de Preços do Mini Índice")
+# --- 4. SEÇÃO DO GRÁFICO PROFISSIONAL DE VELAS (CANDLESTICKS) + VOLUME ---
+st.subheader("⏱️ Gráfico Avançado Mini Índice Intraday (1 Minuto)")
 
-# Banco de dados em memória temporária para simular a variação do dia
-if 'dados_grafico' not in st.session_state:
-    st.session_state.dados_grafico = pd.DataFrame([
-        {"Hora": "11:40", "Preco": 131450},
-        {"Hora": "11:42", "Preco": 131500},
-        {"Hora": "11:44", "Preco": 131480},
-        {"Hora": "11:46", "Preco": 131520},
-        {"Hora": "11:48", "Preco": 131550},
-        {"Hora": "11:50", "Preco": 131510}
+# Banco de dados em memória para simular o formato OHLC (Abertura, Máxima, Mínima, Fechamento) e Volume
+if 'dados_candles' not in st.session_state:
+    st.session_state.dados_candles = pd.DataFrame([
+        {"Hora": "11:46", "Abertura": 131450, "Maxima": 131510, "Minima": 131440, "Fechamento": 131500, "Volume": 4500},
+        {"Hora": "11:47", "Abertura": 131500, "Maxima": 131530, "Minima": 131480, "Fechamento": 131480, "Volume": 3800},
+        {"Hora": "11:48", "Abertura": 131480, "Maxima": 131540, "Minima": 131470, "Fechamento": 131520, "Volume": 6200},
+        {"Hora": "11:49", "Abertura": 131520, "Maxima": 131560, "Minima": 131510, "Fechamento": 131550, "Volume": 7100},
+        {"Hora": "11:50", "Abertura": 131550, "Maxima": 131550, "Minima": 131490, "Fechamento": 131510, "Volume": 5300}
     ])
 
 try:
-    # Puxa o último preço rápido do Mini Índice via internet para atualizar a tela
+    # Puxa os dados atualizados reais do mercado
     url = "https://yahoo.com"
     headers = {'User-Agent': 'Mozilla/5.0'}
     res = requests.get(url, headers=headers, timeout=3).json()
-    preco_online = res['quoteResponse']['result'][0]['regularMarketPrice']
+    ativo_data = res['quoteResponse']['result'][0]
     
-    if preco_online > 0 and preco_online != st.session_state.dados_grafico['Preco'].iloc[-1]:
-        hora_atual = datetime.now().strftime("%H:%M")
-        novo_ponto = pd.DataFrame([{"Hora": hora_atual, "Preco": preco_online}])
-        st.session_state.dados_grafico = pd.concat([st.session_state.dados_grafico, novo_ponto], ignore_index=True).tail(15)
+    preco_atual = ativo_data.get('regularMarketPrice', 0)
+    volume_atual = ativo_data.get('regularMarketVolume', 1000)
+    
+    if preco_atual > 0:
+        hora_minuto = datetime.now().strftime("%H:%M")
+        
+        # Se mudou o minuto, empacota como uma nova vela de Day Trade
+        if hora_minuto != st.session_state.dados_candles['Hora'].iloc[-1]:
+            abertura = st.session_state.dados_candles['Fechamento'].iloc[-1]
+            novo_candle = pd.DataFrame([{
+                "Hora": hora_minuto,
+                "Abertura": abertura,
+                "Maxima": max(abertura, preco_atual) + 20,
+                "Minima": min(abertura, preco_atual) - 20,
+                "Fechamento": preco_atual,
+                "Volume": volume_atual / 100 # Reduz escala visual do volume
+            }])
+            st.session_state.dados_candles = pd.concat([st.session_state.dados_candles, novo_candle], ignore_index=True).tail(20)
+        else:
+            # Atualiza o candle atual ticando em tempo real
+            idx = st.session_state.dados_candles.index[-1]
+            st.session_state.dados_candles.at[idx, 'Fechamento'] = preco_atual
+            if preco_atual > st.session_state.dados_candles.at[idx, 'Maxima']:
+                st.session_state.dados_candles.at[idx, 'Maxima'] = preco_atual
+            if preco_atual < st.session_state.dados_candles.at[idx, 'Minima']:
+                st.session_state.dados_candles.at[idx, 'Minima'] = preco_atual
 except:
     pass
 
-df_plot = st.session_state.dados_grafico
+df_candles = st.session_state.dados_candles
 
-# Desenha o gráfico nativo que roda direto na sua máquina sem depender da TradingView
-fig_win = go.Figure()
-fig_win.add_trace(go.Scatter(x=df_plot['Hora'], y=df_plot['Preco'], mode='lines+markers', name='WIN Preço', line=dict(color='#00ffcc', width=3)))
-fig_win.update_layout(template="plotly_dark", height=350, margin=dict(l=10, r=10, t=10, b=10), yaxis=dict(tickformat=",.0f"))
-st.plotly_chart(fig_win, key="grafico_win_nativo_ok")
+# Cria o layout duplo (Painel superior para os Candles e inferior para as barras de Volume)
+fig_profissional = make_subplots(rows=2, cols=1, shared_xaxes=True, 
+                                 vertical_spacing=0.05, row_heights=[0.7, 0.3])
 
-# Recarrega a tela sozinho de forma estável
+# 1. Adiciona os Candlesticks de Alta (Verde) e Baixa (Vermelho)
+fig_profissional.add_trace(go.Candlestick(
+    x=df_candles['Hora'],
+    open=df_candles['Abertura'],
+    high=df_candles['Maxima'],
+    low=df_candles['Minima'],
+    close=df_candles['Fechamento'],
+    name='WIN Vela',
+    increasing_line_color='#26a69a', decreasing_line_color='#ef5350',
+    increasing_fillcolor='#26a69a', decreasing_fillcolor='#ef5350'
+), row=1, col=1)
+
+# 2. Adiciona as barras de Volume no rodapé
+fig_profissional.add_trace(go.Bar(
+    x=df_candles['Hora'],
+    y=df_candles['Volume'],
+    name='Volume',
+    marker_color='#555555',
+    opacity=0.6
+), row=2, col=1)
+
+# Ajustes de visual dark de plataforma profissional
+fig_profissional.update_layout(
+    template="plotly_dark",
+    height=450,
+    margin=dict(l=10, r=10, t=10, b=10),
+    xaxis_rangeslider_visible=False, # Remove a barra deslizante feia de baixo
+    showlegend=False
+)
+fig_profissional.update_yaxis(tickformat=",.0f", row=1, col=1)
+
+st.plotly_chart(fig_profissional, key="grafico_candles_volume_trader")
+
+# Auto-reboot leve a cada 2 segundos para monitorar os negócios
 time.sleep(2)
 st.rerun()
