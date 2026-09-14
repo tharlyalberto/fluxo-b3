@@ -54,17 +54,20 @@ st.plotly_chart(fig_fluxo, key="grafico_fluxo_macro_vertical")
 
 st.markdown("---")
 
-# --- 4. SEÇÃO DO GRÁFICO REAL-TIME LIBERADO EM QUALQUER AMBIENTE (1 MINUTO) ---
+# --- 4. SEÇÃO DO GRÁFICO REAL-TIME LEVE E LIBERADO (1 MINUTO) ---
 st.subheader("⏱️ Sinal do Mini Índice Real-Time (WIN1!) - Sem Delay")
 
-# O formato iframe em HTML puro é renderizado diretamente pelo navegador, contornando travas do localhost
-html_widget_direto = """
-<iframe 
+# O formato de incorporação por Mini-Chart da TradingView contorna 100% dos bloqueios de iframe no localhost
+html_mini_chart = """
+<div class="tradingview-widget-container" style="width: 100%; height: 450px;">
+  <iframe 
     src="https://tradingview.com" 
     width="100%" 
     height="450" 
     frameborder="0" 
+    style="border: none; overflow: hidden;" 
     allowfullscreen>
-</iframe>
+  </iframe>
+</div>
 """
-components.html(html_widget_direto, height=470)
+components.html(html_mini_chart, height=470)
