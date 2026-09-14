@@ -17,6 +17,10 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
+# MECANISMO DE CORREÇÃO: Limpa conflitos de memória de códigos anteriores
+if 'dados_candles' in st.session_state and 'Cor' not in st.session_state.dados_candles.columns:
+    del st.session_state['dados_candles']
+
 st.title("⚡ Painel de Operações WIN - Fluxo B3 & Tempo Real")
 st.markdown("Foco Absoluto no Mini Índice | Dados Macros e Sinal Técnico")
 
@@ -60,7 +64,6 @@ st.markdown("---")
 # --- 4. SEÇÃO DO GRÁFICO PROFISSIONAL DE VELAS (CANDLESTICKS) + VOLUME COLORIDO ---
 st.subheader("⏱️ Gráfico Avançado Mini Índice Intraday (1 Minuto)")
 
-# Banco de dados em memória para simular o formato OHLC e Cores de Fluxo
 if 'dados_candles' not in st.session_state:
     st.session_state.dados_candles = pd.DataFrame([
         {"Hora": "11:46", "Abertura": 131450, "Maxima": 131510, "Minima": 131440, "Fechamento": 131500, "Volume": 4500, "Cor": "#26a69a"},
@@ -118,7 +121,6 @@ fig_profissional.add_trace(go.Candlestick(
     increasing_fillcolor='#26a69a', decreasing_fillcolor='#ef5350'
 ), row=1, col=1)
 
-# O Volume agora acompanha a cor do fluxo agressor da barra
 fig_profissional.add_trace(go.Bar(
     x=df_candles['Hora'], y=df_candles['Volume'], name='Fluxo do Dia',
     marker_color=df_candles['Cor'], opacity=0.8
