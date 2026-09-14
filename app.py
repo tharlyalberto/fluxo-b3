@@ -54,10 +54,9 @@ st.plotly_chart(fig_fluxo, key="grafico_fluxo_macro_vertical")
 
 st.markdown("---")
 
-# --- 4. SEÇÃO DO GRÁFICO REAL-TIME EM TELA CHEIA (DESTRAVADO) ---
+# --- 4. SEÇÃO DO GRÁFICO REAL-TIME EM TELA CHEIA (AJUSTADO 1 MINUTO) ---
 st.subheader("⏱️ Sinal do Mini Índice Real-Time (WIN1!) - Sem Delay")
 
-# Componente estruturado com o link oficial JavaScript da TradingView
 html_widget = """
 <div class="tradingview-widget-container" style="height:550px;width:100%;">
   <div id="tradingview_chart_fullscreen" style="height:550px;width:100%;"></div>
