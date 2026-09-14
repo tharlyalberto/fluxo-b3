@@ -66,7 +66,8 @@ html_widget = """
   new TradingView.widget({
     "width": "100%",
     "height": 550,
-    "symbol": "BMFBOVESPA:WIN1!",
+  <script type="text/javascript" src="https://tradingview.com"></script>
+
     "interval": "1",
     "timezone": "America/Sao_Paulo",
     "theme": "dark",
