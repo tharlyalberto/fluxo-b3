@@ -49,35 +49,34 @@ st.subheader("📈 Histórico Macro do Fluxo (IND)")
 fig_fluxo = go.Figure()
 fig_fluxo.add_trace(go.Scatter(x=df_completo['Data'], y=df_completo['IND_Gringo'], mode='lines+markers', name='Estrangeiros (Gringos)', line=dict(color='#00ffcc', width=3)))
 fig_fluxo.add_trace(go.Scatter(x=df_completo['Data'], y=df_completo['IND_Inst'], mode='lines+markers', name='Institucionais BR', line=dict(color='#ffaa00', width=2, dash='dash')))
-fig_fluxo.update_layout(template="plotly_dark", height=350, margin=dict(l=10, r=10, t=10, b=10))
+fig_fluxo.update_layout(template="plotly_dark", height=320, margin=dict(l=10, r=10, t=10, b=10))
 st.plotly_chart(fig_fluxo, key="grafico_fluxo_macro_vertical")
 
 st.markdown("---")
 
-# --- 4. SEÇÃO DO GRÁFICO REAL-TIME EM TELA CHEIA (AJUSTADO 1 MINUTO) ---
+# --- 4. SEÇÃO DO GRÁFICO REAL-TIME LIBERADO PELA TRADINGVIEW (1 MINUTO) ---
 st.subheader("⏱️ Sinal do Mini Índice Real-Time (WIN1!) - Sem Delay")
 
-html_widget = """
-<div class="tradingview-widget-container" style="height:550px;width:100%;">
-  <div id="tradingview_chart_fullscreen" style="height:550px;width:100%;"></div>
-  <script type="text/javascript" src="https://tradingview.com"></script>
-  <script type="text/javascript">
-  new TradingView.widget({
-    "width": "100%",
-    "height": 550,
-    "symbol": "BMFBOVESPA:WIN1!",
-    "interval": "1",
-    "timezone": "America/Sao_Paulo",
-    "theme": "dark",
-    "style": "1",
-    "locale": "br",
-    "toolbar_bg": "#f1f3f6",
-    "enable_publishing": false,
-    "hide_legend": false,
-    "save_image": false,
-    "container_id": "tradingview_chart_fullscreen"
-  });
+# Este widget alternativo oficial carrega os dados e o mini-gráfico em tempo real de forma 100% liberada pela TradingView
+html_widget_liberado = """
+<div class="tradingview-widget-container" style="width:100%; height:400px;">
+  <div class="tradingview-widget-container__widget"></div>
+  <script type="text/javascript" src="https://tradingview.com" async>
+  {
+  "width": "100%",
+  "height": "400",
+  "symbol": "BMFBOVESPA:WIN1!",
+  "interval": "1",
+  "timezone": "America/Sao_Paulo",
+  "theme": "dark",
+  "style": "1",
+  "locale": "br",
+  "allow_symbol_change": false,
+  "calendar": false,
+  "hide_volume": true,
+  "support_host": "https://tradingview.com"
+}
   </script>
 </div>
 """
-components.html(html_widget, height=560)
+components.html(html_widget_liberado, height=420)
