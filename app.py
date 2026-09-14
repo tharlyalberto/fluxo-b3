@@ -1,3 +1,4 @@
+
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
@@ -57,7 +58,7 @@ st.markdown("---")
 # --- 4. SEÇÃO DO GRÁFICO REAL-TIME EM TELA CHEIA (DESTRAVADO) ---
 st.subheader("⏱️ Sinal do Mini Índice Real-Time (WIN1!) - Sem Delay")
 
-# Componente em container livre de colunas para garantir o carregamento do script da TradingView
+# Componente estruturado com o link oficial JavaScript da TradingView
 html_widget = """
 <div class="tradingview-widget-container" style="height:550px;width:100%;">
   <div id="tradingview_chart_fullscreen" style="height:550px;width:100%;"></div>
@@ -66,8 +67,7 @@ html_widget = """
   new TradingView.widget({
     "width": "100%",
     "height": 550,
-  <script type="text/javascript" src="https://tradingview.com"></script>
-
+    "symbol": "BMFBOVESPA:WIN1!",
     "interval": "1",
     "timezone": "America/Sao_Paulo",
     "theme": "dark",
