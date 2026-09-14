@@ -92,7 +92,7 @@ try:
                 "Maxima": max(abertura, preco_atual) + 20,
                 "Minima": min(abertura, preco_atual) - 20,
                 "Fechamento": preco_atual,
-                "Volume": volume_atual / 100 # Reduz escala visual do volume
+                "Volume": volume_atual / 100
             }])
             st.session_state.dados_candles = pd.concat([st.session_state.dados_candles, novo_candle], ignore_index=True).tail(20)
         else:
@@ -138,10 +138,11 @@ fig_profissional.update_layout(
     template="plotly_dark",
     height=450,
     margin=dict(l=10, r=10, t=10, b=10),
-    xaxis_rangeslider_visible=False, # Remove a barra deslizante feia de baixo
+    xaxis_rangeslider_visible=False,
     showlegend=False
 )
-fig_profissional.update_yaxis(tickformat=",.0f", row=1, col=1)
+# LINHA CORRIGIDA AQUI: update_yaxes com 'es'
+fig_profissional.update_yaxes(tickformat=",.0f", row=1, col=1)
 
 st.plotly_chart(fig_profissional, key="grafico_candles_volume_trader")
 
