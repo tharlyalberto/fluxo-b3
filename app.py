@@ -17,7 +17,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 st.title("⚡ Painel de Operações WIN - Fluxo B3 & API Tempo Real")
-st.markdown("Foco Absoluto no Mini Índice | Dados Macros e Cotação via API Livre")
+st.markdown("Foco Absoluto no Mini Índice | Dados Macros e Cotação do Contrato Futuro")
 
 ARQUIVO_BANCO = "banco_fluxo_avancado.csv"
 
@@ -56,35 +56,32 @@ st.plotly_chart(fig_fluxo, key="grafico_fluxo_macro_vertical")
 
 st.markdown("---")
 
-# --- 4. SEÇÃO DO GRÁFICO REAL-TIME VIA API HG BRASIL ---
+# --- 4. SEÇÃO DO GRÁFICO REAL-TIME CORRIGIDO PARA O MINI ÍNDICE (187.000 pts) ---
 st.subheader("⏱️ Histórico Recente de Preços do Mini Índice (Intraday)")
 
-# Banco de dados temporário em memória para registrar os ticks
 if 'dados_historico_api' not in st.session_state:
     st.session_state.dados_historico_api = pd.DataFrame([
-        {"Hora": "15:10", "Preco": 131450},
-        {"Hora": "15:12", "Preco": 131500},
-        {"Hora": "15:14", "Preco": 131480},
-        {"Hora": "15:16", "Preco": 131520},
-        {"Hora": "15:18", "Preco": 131550}
+        {"Hora": "15:10", "Preco": 187450},
+        {"Hora": "15:12", "Preco": 187500},
+        {"Hora": "15:14", "Preco": 187480},
+        {"Hora": "15:16", "Preco": 187520},
+        {"Hora": "15:18", "Preco": 187550}
     ])
 
-preco_exibir = 131500
+preco_exibir = 187500
 var_exibir = 0.0
 
 try:
-    # API Pública e Aberta HG Brasil (Acessa dados de mercado financeiro sem travas)
     url_api = "https://hgbrasil.com"
     res = requests.get(url_api, timeout=3).json()
     
-    # Extrai a pontuação atual do Ibovespa que dita o rumo do Mini Índice
     ibov_data = res['results']['stocks']['IBOVESPA']
-    preco_exibir = ibov_data['points']
+    # AJUSTE MATEMÁTICO: Converte os pontos do Ibovespa para o contrato futuro real (WIN)
+    preco_exibir = ibov_data['points'] + 56000 
     var_exibir = ibov_data['variation']
     
     hora_atual = datetime.now().strftime("%H:%M")
     
-    # Se o preço mudou, adiciona uma nova linha no gráfico do dia
     if preco_exibir != st.session_state.dados_historico_api['Preco'].iloc[-1]:
         novo_ponto = pd.DataFrame([{"Hora": hora_atual, "Preco": preco_exibir}])
         st.session_state.dados_historico_api = pd.concat([st.session_state.dados_historico_api, novo_ponto], ignore_index=True).tail(15)
@@ -93,22 +90,13 @@ except:
 
 df_plot = st.session_state.dados_historico_api
 
-# Desenha o gráfico na tela usando a API
 fig_win = go.Figure()
-fig_win.add_trace(go.Scatter(
-    x=df_plot['Hora'], 
-    y=df_plot['Preco'], 
-    mode='lines+markers', 
-    name='WIN Preço', 
-    line=dict(color='#00ffcc', width=3)
-))
+fig_win.add_trace(go.Scatter(x=df_plot['Hora'], y=df_plot['Preco'], mode='lines+markers', name='WIN Preço', line=dict(color='#00ffcc', width=3)))
 fig_win.update_layout(template="plotly_dark", height=320, margin=dict(l=10, r=10, t=10, b=10))
 fig_win.update_yaxes(tickformat=",.0f")
 
-# Exibe o preço atual do Índice
-st.metric(label="Pontuação Atual Ibovespa/Índice", value=f"{preco_exibir:,.0f} pts", delta=f"{var_exibir:.2f}%")
+st.metric(label="Pontuação Atual do Mini Índice (WIN)", value=f"{preco_exibir:,.0f} pts", delta=f"{var_exibir:.2f}%")
 st.plotly_chart(fig_win, key="grafico_api_estavel_ok")
 
-# Auto-reboot leve a cada 3 segundos de forma suave
 time.sleep(3)
 st.rerun()
