@@ -54,29 +54,17 @@ st.plotly_chart(fig_fluxo, key="grafico_fluxo_macro_vertical")
 
 st.markdown("---")
 
-# --- 4. SEÇÃO DO GRÁFICO REAL-TIME LIBERADO PELA TRADINGVIEW (1 MINUTO) ---
+# --- 4. SEÇÃO DO GRÁFICO REAL-TIME LIBERADO EM QUALQUER AMBIENTE (1 MINUTO) ---
 st.subheader("⏱️ Sinal do Mini Índice Real-Time (WIN1!) - Sem Delay")
 
-# Este widget alternativo oficial carrega os dados e o mini-gráfico em tempo real de forma 100% liberada pela TradingView
-html_widget_liberado = """
-<div class="tradingview-widget-container" style="width:100%; height:400px;">
-  <div class="tradingview-widget-container__widget"></div>
-  <script type="text/javascript" src="https://tradingview.com" async>
-  {
-  "width": "100%",
-  "height": "400",
-  "symbol": "BMFBOVESPA:WIN1!",
-  "interval": "1",
-  "timezone": "America/Sao_Paulo",
-  "theme": "dark",
-  "style": "1",
-  "locale": "br",
-  "allow_symbol_change": false,
-  "calendar": false,
-  "hide_volume": true,
-  "support_host": "https://tradingview.com"
-}
-  </script>
-</div>
+# O formato iframe em HTML puro é renderizado diretamente pelo navegador, contornando travas do localhost
+html_widget_direto = """
+<iframe 
+    src="https://tradingview.com" 
+    width="100%" 
+    height="450" 
+    frameborder="0" 
+    allowfullscreen>
+</iframe>
 """
-components.html(html_widget_liberado, height=420)
+components.html(html_widget_direto, height=470)
